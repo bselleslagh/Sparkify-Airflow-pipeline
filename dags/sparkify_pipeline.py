@@ -40,7 +40,7 @@ stage_events_to_redshift = StageToRedshiftOperator(
     #execution_date = "{{ ds }}"
     execution_date = "2018-11-01"
     )
-
+'''
 stage_songs_to_redshift = StageToRedshiftOperator(
     task_id='Stage_songs',
     dag=dag,
@@ -50,6 +50,7 @@ stage_songs_to_redshift = StageToRedshiftOperator(
     s3_bucket="udacity-dend",
     s3_key="song_data"
 )
+'''
 
 load_songplays_table = LoadFactOperator(
     task_id='Load_songplays_fact_table',
@@ -84,7 +85,7 @@ run_quality_checks = DataQualityOperator(
 end_operator = DummyOperator(task_id='Stop_execution',  dag=dag)
 
 start_operator >> stage_events_to_redshift >> load_songplays_table
-start_operator >> stage_songs_to_redshift >> load_songplays_table
+#start_operator >> stage_songs_to_redshift >> load_songplays_table
 
 load_songplays_table >> load_song_dimension_table >> run_quality_checks
 load_songplays_table >> load_user_dimension_table >> run_quality_checks
