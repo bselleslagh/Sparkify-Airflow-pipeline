@@ -1,26 +1,107 @@
+#from airflow.typing_extensions import TypeVarTuple
 from airflow.hooks.postgres_hook import PostgresHook
+from airflow.contrib.hooks.aws_hook import AwsHook
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
+from datetime import datetime
 
 class StageToRedshiftOperator(BaseOperator):
     ui_color = '#358140'
+    template_fields=("s3_key", "execution_date", )
+
+    COPY_SQL = """
+    COPY {table}
+    FROM '{s3_path}'
+    ACCESS_KEY_ID '{access_key}'
+    SECRET_ACCESS_KEY '{access_secret}'
+    json 'auto ignorecase'
+    """
 
     @apply_defaults
     def __init__(self,
-                 # Define your operators params (with defaults) here
-                 # Example:
-                 # redshift_conn_id=your-connection-name
+                redshift_conn_id="",
+                aws_credentials_id="",
+                table="",
+                s3_bucket="",
+                s3_key="",
+                execution_date="",
                  *args, **kwargs):
 
         super(StageToRedshiftOperator, self).__init__(*args, **kwargs)
-        # Map params here
-        # Example:
-        # self.conn_id = conn_id
+        self.redshift_conn_id=redshift_conn_id
+        self.aws_credentials_id=aws_credentials_id
+        self.table=table
+        self.s3_bucket=s3_bucket
+        self.s3_key=s3_key
+        self.execution_date=execution_date
 
     def execute(self, context):
-        self.log.info('StageToRedshiftOperator not implemented yet')
+        '''
+        Stage data from S3 to a given Redshift table.
+        The staging tables should already be created on Redshift!
+        '''
+
+        aws_hook=AwsHook(self.aws_credentials_id, client_type="redshift")
+        credentials=aws_hook.get_credentials()
+        redshift=PostgresHook(postgres_conn_id=self.redshift_conn_id)
+
+        #Only process the given run date if a run date is passed. 
+        if self.execution_date:
+            date = datetime.strptime(self.execution_date, '%Y-%m-%d')
+            self.s3_key=f"{self.s3_key}/{date.year}/{date.month}/{self.execution_date}-events.json"
+
+
+        rendered_key = self.s3_key.format(**context)
+        s3_path = "s3://{}/{}".format(self.s3_bucket, rendered_key)
+        self.log.info(f'Loading data from {s3_path}')
+        formatted_sql = StageToRedshiftOperator.COPY_SQL.format(
+            table=self.table,
+            s3_path=s3_path,
+            access_key=credentials.access_key,
+            access_secret=credentials.secret_key
+        )
+
+        self.log.info(f'Data laoded to {self.table} table')
+
+        redshift.run(formatted_sql)
 
 
 
 
+# THIS OPERATOR ASSUMES STAGING TABLES ARE ALREADY AVAILABLE, FOR EXAMPLE:
 
+'''
+CREATE TABLE IF NOT EXISTS staging_events (
+    artist varchar,
+    auth varchar,
+    firstName varchar,
+    gender char,
+    itemInSession int,
+    lastName varchar,
+    length varchar,
+    level varchar,
+    location varchar,
+    method varchar,
+    page varchar,
+    registration bigint,
+    sessionId int,
+    song varchar,
+    status int,
+    ts varchar,
+    userAgent varchar,
+    userId int
+    )
+
+CREATE TABLE IF NOT EXISTS staging_songs (
+    artist_id varchar,
+    artist_latitude float,
+    artist_location varchar,
+    artist_longitude float,
+    artist_name varchar,
+    duration float,
+    num_songs int,
+    song_id varchar,
+    title varchar,
+    year int
+    )
+'''

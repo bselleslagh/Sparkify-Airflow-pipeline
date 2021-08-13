@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
 import os
 from airflow import DAG
-from airflow.operators.dummy_operator import DummyOperator
-from airflow.operators import (StageToRedshiftOperator, LoadFactOperator,
+from airflow.operators.dummy import DummyOperator
+from operators import (StageToRedshiftOperator, LoadFactOperator,
                                 LoadDimensionOperator, DataQualityOperator)
 from helpers import SqlQueries
 
@@ -11,25 +11,44 @@ from helpers import SqlQueries
 
 default_args = {
     'owner': 'udacity',
-    'start_date': datetime(2019, 1, 12),
+    'depends_on_past': False,
+    'email_on_retry': False,
+    'start_date': datetime(2018, 11, 1),
+    #'end_date':datetime(2018 ,11 ,3),
+    #retries':3,
+    'retry_delay': timedelta(minutes=5),
+    
 }
 
-dag = DAG('udac_example_dag',
+dag = DAG('sparkify_pipeline',
           default_args=default_args,
           description='Load and transform data in Redshift with Airflow',
-          schedule_interval='0 * * * *'
+          schedule_interval='@daily',
+          catchup=False
         )
 
 start_operator = DummyOperator(task_id='Begin_execution',  dag=dag)
 
 stage_events_to_redshift = StageToRedshiftOperator(
     task_id='Stage_events',
-    dag=dag
-)
+    dag=dag,
+    redshift_conn_id='redshift',
+    aws_credentials_id='aws_credentials',
+    table="staging_events",
+    s3_bucket="udacity-dend",
+    s3_key="log_data",
+    #execution_date = "{{ ds }}"
+    execution_date = "2018-11-01"
+    )
 
 stage_songs_to_redshift = StageToRedshiftOperator(
     task_id='Stage_songs',
-    dag=dag
+    dag=dag,
+    redshift_conn_id='redshift',
+    aws_credentials_id='aws_credentials',
+    table='staging_songs',
+    s3_bucket="udacity-dend",
+    s3_key="song_data"
 )
 
 load_songplays_table = LoadFactOperator(
@@ -63,3 +82,16 @@ run_quality_checks = DataQualityOperator(
 )
 
 end_operator = DummyOperator(task_id='Stop_execution',  dag=dag)
+
+start_operator >> stage_events_to_redshift >> load_songplays_table
+start_operator >> stage_songs_to_redshift >> load_songplays_table
+
+load_songplays_table >> load_song_dimension_table >> run_quality_checks
+load_songplays_table >> load_user_dimension_table >> run_quality_checks
+load_songplays_table >> load_artist_dimension_table >> run_quality_checks
+load_songplays_table >> load_time_dimension_table >> run_quality_checks
+
+run_quality_checks >> end_operator
+
+
+
