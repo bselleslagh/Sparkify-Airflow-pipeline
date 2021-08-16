@@ -42,7 +42,6 @@ class SqlQueries:
     )
 
     songplay_table_insert = ("""
-        CREATE TABLE {destination_table} AS
         SELECT
                 md5(events.sessionid || events.start_time) songplay_id,
                 events.start_time, 
