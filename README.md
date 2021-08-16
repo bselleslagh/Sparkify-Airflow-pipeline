@@ -8,7 +8,7 @@ To make sure the loaded data is of good quality, a data quality operator in Airf
 
 ## Sparkify DAG Process Steps
 
-![example-dag](/Users/bselleslagh/airflow-docker/example-dag.png)
+![example-dag](example-dag.png)
 
 ### stage_redshift operator
 
@@ -28,7 +28,7 @@ This operator is used to run checks on the data itself. The operator's main func
 
 ### Fact & Dimension table ERD
 
-![Sparkify DWH](/Users/bselleslagh/airflow-docker/Sparkify DWH.png)
+![Sparkify DWH](Sparkify DWH.png)
 
 ## Using the DAG
 
