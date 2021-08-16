@@ -47,6 +47,7 @@ class StageToRedshiftOperator(BaseOperator):
         redshift=PostgresHook(postgres_conn_id=self.redshift_conn_id)
 
         redshift.run(self.create_statement)
+        redshift.run(f'TRUNCATE TABLE {self.table}')
 
         #Only process the given run date if a run date is passed. 
         if self.execution_date:
@@ -64,6 +65,5 @@ class StageToRedshiftOperator(BaseOperator):
             access_secret=credentials.secret_key
         )
 
-        self.log.info(f'Data laoded to {self.table} table')
-
+        self.log.info(f'Data loaded to {self.table} table')
         redshift.run(formatted_sql)

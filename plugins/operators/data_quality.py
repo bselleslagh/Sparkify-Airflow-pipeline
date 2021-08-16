@@ -32,3 +32,5 @@ class DataQualityOperator(BaseOperator):
 
         else :
             self.log.info(f'Data quality check succeeded with {result} records as result!')
+
+        cursor.close()

@@ -24,12 +24,17 @@ class LoadFactOperator(BaseOperator):
         '''
         
         self.log.info(f'Starting to append data to fact table {self.destination_table}')
-        redshift_hook=PostgresHook(self.redshift_conn_id)
+        redshift=PostgresHook(postgres_conn_id=self.redshift_conn_id)
+        connection = redshift.get_conn()
+        cursor = connection.cursor()
 
-        check_table_exists = redshift_hook.run(f"select count(*) from PG_TABLE_DEF where tablename = '{self.destination_table}'")
+        cursor.execute(f"select count(*) from PG_TABLE_DEF where tablename = '{self.destination_table}'")
+        check_table_exists = cursor.fetchone()
         
-        if check_table_exists == 0:
-            redshift_hook.run(f'CREATE TABLE {self.destination_table} AS ' + SqlQueries.songplay_table_insert)
+        if check_table_exists[0] == 0:
+            redshift.run(f'CREATE TABLE {self.destination_table} AS ' + SqlQueries.songplay_table_insert)
 
         else:
-            redshift_hook.run(f'INSERT INTO {self.destination_table} (' + SqlQueries.songplay_table_insert + ' )')
+            redshift.run(f'INSERT INTO {self.destination_table} (' + SqlQueries.songplay_table_insert + ' )')
+
+        cursor.close()

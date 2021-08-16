@@ -15,7 +15,7 @@ default_args = {
     'email_on_retry': False,
     'start_date': datetime(2018, 11, 1),
     #'end_date':datetime(2018 ,11 ,3),
-    #retries':3,
+     retries':3,
     'retry_delay': timedelta(minutes=5),
     
 }
@@ -29,7 +29,6 @@ dag = DAG('sparkify_pipeline',
 
 start_operator = DummyOperator(task_id='Begin_execution',  dag=dag)
 
-'''
 stage_events_to_redshift = StageToRedshiftOperator(
     task_id='Stage_events',
     dag=dag,
@@ -39,8 +38,8 @@ stage_events_to_redshift = StageToRedshiftOperator(
     create_statement=SqlQueries.staging_events_create,
     s3_bucket="udacity-dend",
     s3_key="log_data",
-    #execution_date = "{{ ds }}"
-    execution_date = "2018-11-01"
+    execution_date = "{{ ds }}"
+    #execution_date = "2018-11-01"
     )
 
 stage_songs_to_redshift = StageToRedshiftOperator(
@@ -54,7 +53,6 @@ stage_songs_to_redshift = StageToRedshiftOperator(
     s3_key="song_data"
 )
 
-'''
 
 load_songplays_table = LoadFactOperator(
     task_id='Load_songplays_fact_table',
@@ -113,10 +111,10 @@ run_quality_checks = DataQualityOperator(
 
 end_operator = DummyOperator(task_id='Stop_execution',  dag=dag)
 
-'''
+
 start_operator >> stage_events_to_redshift >> load_songplays_table
 start_operator >> stage_songs_to_redshift >> load_songplays_table
-'''
+
 
 load_songplays_table >> load_song_dimension_table >> run_quality_checks
 load_songplays_table >> load_user_dimension_table >> run_quality_checks
