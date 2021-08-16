@@ -23,7 +23,7 @@ default_args = {
 dag = DAG('sparkify_pipeline',
           default_args=default_args,
           description='Load and transform data in Redshift with Airflow',
-          schedule_interval='@daily',
+          schedule_interval='@hourly',
           catchup=False
         )
 
