@@ -28,7 +28,7 @@ This operator is used to run checks on the data itself. The operator's main func
 
 ### Fact & Dimension table ERD
 
-![Sparkify DWH](Sparkify DWH.png)
+![Sparkify DWH](Sparkify%DWH.png)
 
 ## Using the DAG
 
