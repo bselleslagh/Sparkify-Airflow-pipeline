@@ -22,6 +22,7 @@ class StageToRedshiftOperator(BaseOperator):
                 redshift_conn_id="",
                 aws_credentials_id="",
                 table="",
+                create_statement="",
                 s3_bucket="",
                 s3_key="",
                 execution_date="",
@@ -31,6 +32,7 @@ class StageToRedshiftOperator(BaseOperator):
         self.redshift_conn_id=redshift_conn_id
         self.aws_credentials_id=aws_credentials_id
         self.table=table
+        self.create_statement=create_statement
         self.s3_bucket=s3_bucket
         self.s3_key=s3_key
         self.execution_date=execution_date
@@ -38,12 +40,13 @@ class StageToRedshiftOperator(BaseOperator):
     def execute(self, context):
         '''
         Stage data from S3 to a given Redshift table.
-        The staging tables should already be created on Redshift!
         '''
 
         aws_hook=AwsHook(self.aws_credentials_id, client_type="redshift")
         credentials=aws_hook.get_credentials()
         redshift=PostgresHook(postgres_conn_id=self.redshift_conn_id)
+
+        redshift.run(self.create_statement)
 
         #Only process the given run date if a run date is passed. 
         if self.execution_date:
@@ -64,44 +67,3 @@ class StageToRedshiftOperator(BaseOperator):
         self.log.info(f'Data laoded to {self.table} table')
 
         redshift.run(formatted_sql)
-
-
-
-
-# THIS OPERATOR ASSUMES STAGING TABLES ARE ALREADY AVAILABLE, FOR EXAMPLE:
-
-'''
-CREATE TABLE IF NOT EXISTS staging_events (
-    artist varchar,
-    auth varchar,
-    firstName varchar,
-    gender char,
-    itemInSession int,
-    lastName varchar,
-    length varchar,
-    level varchar,
-    location varchar,
-    method varchar,
-    page varchar,
-    registration bigint,
-    sessionId int,
-    song varchar,
-    status int,
-    ts varchar,
-    userAgent varchar,
-    userId int
-    )
-
-CREATE TABLE IF NOT EXISTS staging_songs (
-    artist_id varchar,
-    artist_latitude float,
-    artist_location varchar,
-    artist_longitude float,
-    artist_name varchar,
-    duration float,
-    num_songs int,
-    song_id varchar,
-    title varchar,
-    year int
-    )
-'''

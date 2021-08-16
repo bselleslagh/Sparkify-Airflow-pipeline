@@ -8,15 +8,34 @@ class LoadDimensionOperator(BaseOperator):
 
     @apply_defaults
     def __init__(self,
-                 # Define your operators params (with defaults) here
-                 # Example:
-                 # conn_id = your-connection-name
+                redshift_conn_id="",
+                destination_table="",
+                truncate_table="",
+                query="",
                  *args, **kwargs):
 
         super(LoadDimensionOperator, self).__init__(*args, **kwargs)
-        # Map params here
-        # Example:
-        # self.conn_id = conn_id
+        self.redshift_conn_id=redshift_conn_id
+        self.destination_table=destination_table
+        self.truncate_table=truncate_table
+        self.query=query
 
     def execute(self, context):
-        self.log.info('LoadDimensionOperator not implemented yet')
+        '''
+        This operator will load fact tables.
+        Given the query and destination table as input.
+        The truncate table parameter must be set to True,
+        if the table needs to be cleaned before load.
+        '''
+        self.log.info(f'Starting to process fact table {self.destination_table}')
+        redshift_hook=PostgresHook(self.redshift_conn_id)
+        
+        if self.truncate_table:
+            redshift_hook.run(f'DROP TABLE IF EXISTS {self.destination_table}')
+            redshift_hook.run(f'CREATE TABLE {self.destination_table} AS ' + self.query)
+
+        else:
+            create_statement = f'INSERT INTO {self.destination_table} AS '
+            redshift_hook.run(create_statement + self.query)
+
+        self.log.info('Loading fact table complete')
