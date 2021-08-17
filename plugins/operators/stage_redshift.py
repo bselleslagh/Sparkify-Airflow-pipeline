@@ -41,9 +41,12 @@ class StageToRedshiftOperator(BaseOperator):
         '''
 
         aws_hook=AwsHook(self.aws_credentials_id, client_type="redshift")
+        self.log.info('Getting credentials for AWS Redshift')
         credentials=aws_hook.get_credentials()
+
         redshift=PostgresHook(postgres_conn_id=self.redshift_conn_id)
 
+        self.log.info(f'Truncating {self.table} table')
         redshift.run(f'TRUNCATE TABLE {self.table}')
 
         #Only process the given run date if a run date is passed. 
@@ -62,5 +65,6 @@ class StageToRedshiftOperator(BaseOperator):
             access_secret=credentials.secret_key
         )
 
-        self.log.info(f'Data loaded to {self.table} table')
+        self.log.info(f'Starting data load to  {self.table}')
         redshift.run(formatted_sql)
+        self.log.info('Data load completed.')
