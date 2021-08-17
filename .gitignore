@@ -2,3 +2,9 @@
 /.env
 /create_tables.sql
 /logs
+dags/sparkify_pipeline.py
+plugins/operators/__pycache__/load_dimension.cpython-36.pyc
+plugins/operators/__pycache__/load_fact.cpython-36.pyc
+plugins/operators/__pycache__/stage_redshift.cpython-36.pyc
+plugins/helpers/__pycache__/sql_queries.cpython-36.pyc
+dags/__pycache__/sparkify_pipeline.cpython-36.pyc

@@ -42,5 +42,91 @@ Requirements:
 Steps:
 
 1. Modify the sparkify-pipeline.py in the dags direcory
-2. Run the dag using Airlfow
-3. Enjoy the results!
+2. Create the tables using the queries below
+3. Run the dag using Airlfow
+4. Enjoy the results!
+
+### Create table statements
+
+```sql
+CREATE TABLE IF NOT EXISTS staging_events (
+    artist varchar,
+    auth varchar,
+    firstName varchar,
+    gender char,
+    itemInSession int,
+    lastName varchar,
+    length varchar,
+    level varchar,
+    location varchar,
+    method varchar,
+    page varchar,
+    registration bigint,
+    sessionId int,
+    song varchar,
+    status int,
+    ts varchar,
+    userAgent varchar,
+    userId int
+    )
+    
+ CREATE TABLE IF NOT EXISTS staging_songs (
+    artist_id varchar,
+    artist_latitude float,
+    artist_location varchar,
+    artist_longitude float,
+    artist_name varchar,
+    duration float,
+    num_songs int,
+    song_id varchar,
+    title varchar,
+    year int
+    )
+    
+CREATE TABLE IF NOT EXISTS songplays (
+		songplay_id varchar,
+		start_time timestamp,
+  	user_id int,
+  	level varchar,
+  	song_id varchar,
+  	artist_id varchar,
+  	sessionid varchar,
+  	location varchar,
+  	useragent varchar
+)
+
+CREATE TABLE IF NOT EXISTS users (
+		userid int,
+  	firstname varchar,
+  	lastname varchar,
+  	gender char,
+  	level varchar
+)
+
+CREATE TABLE IF NOT EXISTS songs (
+		song_id varchar,
+  	title varchar,
+  	artist_id varchar,
+  	year int,
+  	duration float
+)
+
+CREATE TABLE IF NOT EXISTS artists (
+		artist_id varchar,
+  	artist_name varchar,
+  	artist_location varchar,
+  	artist_latitude real,
+  	artist_longitude real
+)
+
+CREATE TABLE IF NOT EXISTS time (
+		start_time timestamp,
+  	hour int,
+  	day int,
+  	week int,
+  	month int,
+  	year int,
+  	dayofweek int
+)
+```
+
