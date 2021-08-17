@@ -31,11 +31,9 @@ class LoadDimensionOperator(BaseOperator):
         redshift_hook=PostgresHook(self.redshift_conn_id)
         
         if self.truncate_table:
-            redshift_hook.run(f'DROP TABLE IF EXISTS {self.destination_table}')
-            redshift_hook.run(f'CREATE TABLE {self.destination_table} AS ' + self.query)
+            redshift_hook.run(f'TRUNCATE TABLE {self.destination_table}')
 
-        else:
-            create_statement = f'INSERT INTO {self.destination_table} AS '
-            redshift_hook.run(create_statement + self.query)
+        insert_statement = f'INSERT INTO {self.destination_table} '
+        redshift_hook.run(insert_statement + self.query)
 
         self.log.info('Loading fact table complete')

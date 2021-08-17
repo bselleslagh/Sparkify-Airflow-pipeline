@@ -22,7 +22,6 @@ class StageToRedshiftOperator(BaseOperator):
                 redshift_conn_id="",
                 aws_credentials_id="",
                 table="",
-                create_statement="",
                 s3_bucket="",
                 s3_key="",
                 execution_date="",
@@ -32,7 +31,6 @@ class StageToRedshiftOperator(BaseOperator):
         self.redshift_conn_id=redshift_conn_id
         self.aws_credentials_id=aws_credentials_id
         self.table=table
-        self.create_statement=create_statement
         self.s3_bucket=s3_bucket
         self.s3_key=s3_key
         self.execution_date=execution_date
@@ -46,7 +44,6 @@ class StageToRedshiftOperator(BaseOperator):
         credentials=aws_hook.get_credentials()
         redshift=PostgresHook(postgres_conn_id=self.redshift_conn_id)
 
-        redshift.run(self.create_statement)
         redshift.run(f'TRUNCATE TABLE {self.table}')
 
         #Only process the given run date if a run date is passed. 

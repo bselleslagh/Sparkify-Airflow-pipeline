@@ -1,46 +1,5 @@
 class SqlQueries:
 
-    staging_events_create = (
-        '''
-    CREATE TABLE IF NOT EXISTS staging_events (
-    artist varchar,
-    auth varchar,
-    firstName varchar,
-    gender char,
-    itemInSession int,
-    lastName varchar,
-    length varchar,
-    level varchar,
-    location varchar,
-    method varchar,
-    page varchar,
-    registration bigint,
-    sessionId int,
-    song varchar,
-    status int,
-    ts varchar,
-    userAgent varchar,
-    userId int
-    )
-    ''')
-
-    staging_songs_create = (
-        '''
-    CREATE TABLE IF NOT EXISTS staging_songs (
-    artist_id varchar,
-    artist_latitude float,
-    artist_location varchar,
-    artist_longitude float,
-    artist_name varchar,
-    duration float,
-    num_songs int,
-    song_id varchar,
-    title varchar,
-    year int
-    )
-        '''
-    )
-
     songplay_table_insert = ("""
         SELECT
                 md5(events.sessionid || events.start_time) songplay_id,
